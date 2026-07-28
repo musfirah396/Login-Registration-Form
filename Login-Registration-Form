@@ -1,0 +1,153 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.HashMap;
+
+// User class stores username and password
+class User {
+    private String username;
+    private String password;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public boolean checkPassword(String password) {
+        return this.password.equals(password);
+    }
+}
+
+class UserManager {
+    private HashMap<String, User> users = new HashMap<>();
+
+    public boolean register(String username, String password) {
+        if (username.isEmpty() || password.length() < 6) {
+            return false;
+        }
+        if (users.containsKey(username)) {
+            return false;
+        }
+        users.put(username, new User(username, password));
+        return true;
+    }
+
+    public boolean login(String username, String password) {
+        User user = users.get(username);
+        return user != null && user.checkPassword(password);
+    }
+}
+
+public class LoginRegistrationGUI extends JFrame {
+    private final UserManager userManager = new UserManager();
+
+    private final JTextField regUsername = new JTextField(15);
+    private final JPasswordField regPassword = new JPasswordField(15);
+    private final JButton regButton = new JButton("Register");
+    private final JLabel regMessage = new JLabel();
+
+    private final JTextField loginUsername = new JTextField(15);
+    private final JPasswordField loginPassword = new JPasswordField(15);
+    private final JButton loginButton = new JButton("Login");
+    private final JLabel loginMessage = new JLabel();
+
+    private CardLayout cardLayout;
+    private JPanel mainPanel;
+
+    public LoginRegistrationGUI() {
+        setTitle("Login & Registration");
+        setSize(350, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        cardLayout = new CardLayout();
+        mainPanel = new JPanel(cardLayout);
+
+        mainPanel.add(createRegisterPanel(), "Register");
+        mainPanel.add(createLoginPanel(), "Login");
+
+        add(mainPanel);
+        cardLayout.show(mainPanel, "Register");
+
+        setVisible(true);
+    }
+
+    private JPanel createRegisterPanel() {
+        JPanel regPanel = new JPanel(new GridLayout(7, 1));
+        regPanel.add(new JLabel("Username:"));
+        regPanel.add(regUsername);
+        regPanel.add(new JLabel("Password (min 6 chars):"));
+        regPanel.add(regPassword);
+        regPanel.add(regButton);
+        regPanel.add(regMessage);
+
+        JButton switchToLogin = new JButton("Go to Login");
+        regPanel.add(switchToLogin);
+
+        regButton.addActionListener(e -> handleRegister());
+
+        switchToLogin.addActionListener(e -> {
+            clearFields();
+            cardLayout.show(mainPanel, "Login");
+        });
+
+        return regPanel;
+    }
+
+    private JPanel createLoginPanel() {
+        JPanel loginPanel = new JPanel(new GridLayout(7, 1));
+        loginPanel.add(new JLabel("Username:"));
+        loginPanel.add(loginUsername);
+        loginPanel.add(new JLabel("Password:"));
+        loginPanel.add(loginPassword);
+        loginPanel.add(loginButton);
+        loginPanel.add(loginMessage);
+
+        JButton switchToRegister = new JButton("Go to Register");
+        loginPanel.add(switchToRegister);
+
+        loginButton.addActionListener(e -> handleLogin());
+
+        switchToRegister.addActionListener(e -> {
+            clearFields();
+            cardLayout.show(mainPanel, "Register");
+        });
+
+        return loginPanel;
+    }
+
+    private void handleRegister() {
+        String username = regUsername.getText().trim();
+        String password = new String(regPassword.getPassword());
+
+        if (userManager.register(username, password)) {
+            regMessage.setText("Registration successful!");
+        } else {
+            regMessage.setText("Registration failed. Check username or password.");
+        }
+    }
+
+    private void handleLogin() {
+        String username = loginUsername.getText().trim();
+        String password = new String(loginPassword.getPassword());
+
+        if (userManager.login(username, password)) {
+            loginMessage.setText("Login successful! Welcome.");
+        } else {
+            loginMessage.setText("Invalid username or password.");
+        }
+    }
+
+    private void clearFields() {
+        regUsername.setText("");
+        regPassword.setText("");
+        loginUsername.setText("");
+        loginPassword.setText("");
+        regMessage.setText("");
+        loginMessage.setText("");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(LoginRegistrationGUI::new);
+    }
+}
